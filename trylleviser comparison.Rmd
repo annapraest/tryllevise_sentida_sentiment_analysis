@@ -7,11 +7,6 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-```
-
-## SENTIDA analysis of trylleviser 
-
-```{r installing packages and custom themes, eval=TRUE, include=FALSE, echo=FALSE}
 library(tidyverse)
 library(tidytext)
 library(ggplot2)
@@ -21,6 +16,13 @@ library(stringr)
 library(knitr)
 library(kableExtra)
 library(Sentida)
+
+
+```
+
+## SENTIDA analysis 
+
+```{r installing packages and custom themes, eval=TRUE, include=FALSE, echo=FALSE}
 
 #themes
 custom_theme1 <- theme_minimal() +
@@ -64,8 +66,9 @@ trylleviser <- trylleviser %>%
 trylleviser$lyrics_shortened <- paste(substr(trylleviser$lyrics, 1, 250), "...")
 trylleviser$lyrics_clean_shortened <- paste(substr(trylleviser$lyrics_clean, 1, 250), "...")
 
-kable(trylleviser[, c("songtitle", "lyrics_shortened", "lyrics_clean_shortened")], format = "html", escape = FALSE) %>%
+knitr::kable(trylleviser[, c("songtitle", "lyrics_shortened", "lyrics_clean_shortened")], format = "html", escape = FALSE) %>%
   kable_styling(full_width = FALSE)
+
 ```
 
 ```{r sentiment analysis trylleviser, echo=TRUE, eval=TRUE, include=TRUE}
@@ -79,8 +82,11 @@ numeric_scores <- sapply(sentiment_scores_trylleviser, function(x) as.numeric(un
 trylleviser$sentiment_scores <- numeric_scores
 ```
 
-```{r sentiment analysis result trylleviser, echo=TRUE, eval=TRUE, include=TRUE}
-kable(trylleviser[, c("songtitle", "sentiment_scores")], format = "html") %>%
+```{r sentiment analysis result trylleviser, echo=FALSE, eval=TRUE, include=TRUE}
+
+trylleviser <- trylleviser %>% arrange(songtitle)
+
+knitr::kable(trylleviser[, c("songtitle", "sentiment_scores")], format = "html") %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -115,7 +121,7 @@ trylleviser_token <- trylleviser_token %>%
 trylleviser_token$lyrics_shortened <- paste(substr(trylleviser_token$lyrics, 1, 250), "...")
 
 #using a combination of head function and kable function
-kable(head(trylleviser_token[, c("songtitle", "lyrics_shortened", "word")]), format = "html") %>%
+knitr::kable(head(trylleviser_token[, c("songtitle", "lyrics_shortened", "word")]), format = "html") %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -139,8 +145,8 @@ trylleviser_token_grouped <- trylleviser_token %>%
   summarize(sentiment_scores = sum(sentiment_scores))
 ```
 
-```{r sentiment analysis result with tokenized words trylleviser, echo=TRUE, eval=TRUE, include=TRUE}
-kable(trylleviser_token_grouped[, c("songtitle", "sentiment_scores")], format = "html") %>%
+```{r sentiment analysis result with tokenized words trylleviser, echo=FALSE, eval=TRUE, include=TRUE}
+knitr::kable(trylleviser_token_grouped[, c("songtitle", "sentiment_scores")], format = "html") %>%
   kable_styling(full_width = FALSE)
 ```
 
@@ -167,7 +173,7 @@ trylleviser_token_number_of_words$combined_word_count <- trylleviser_token_numbe
 
 ```{r showing words included when tokenized, echo=FALSE, eval=TRUE, include=TRUE}
 #using kable function to show the count
-kable(trylleviser_token_number_of_words)
+knitr::kable(trylleviser_token_number_of_words)
 ```
 
 ## Trylleviser with words tokenized without stopwords
@@ -202,10 +208,10 @@ trylleviser_token_number_of_words_no_stopwords$combined_word_count <- tryllevise
 
 ```{r showing words included when tokenized without stopwords, echo=FALSE, eval=TRUE, include=TRUE}
 #using kable function to show the count
-kable(trylleviser_token_number_of_words_no_stopwords)
+knitr::kable(trylleviser_token_number_of_words_no_stopwords)
 ```
 
-## Combining results on sentiment analysis done om trylleviser
+## Combining results on sentiment analysis
 
 ```{r combining dataframes into one trylleviser_combined, echo=TRUE, eval=TRUE, include=FALSE}
 #merging existing dataframes and sorting them by common identifier songtitle
