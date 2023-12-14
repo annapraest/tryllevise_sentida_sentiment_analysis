@@ -72,13 +72,14 @@ knitr::kable(trylleviser[, c("songtitle", "lyrics_shortened", "lyrics_clean_shor
 
 ```{r sentiment analysis trylleviser, echo=TRUE, eval=TRUE, include=TRUE}
 #calculating sentiment score for all trylleviser using lapply
-sentiment_scores_trylleviser <- lapply(trylleviser$lyrics_clean, function(x) sentida(x, output = "total"))
+sentiment_scores_trylleviser <- lapply(trylleviser$lyrics_clean, sentida, output = "total")
 
 #extracting numeric sentiment scores from the new output
-numeric_scores <- sapply(sentiment_scores_trylleviser, function(x) as.numeric(unlist(x)))
+numeric_scores <- sapply(sentiment_scores_trylleviser, as.numeric)
 
 #adding sentiment scores as a new column to the original dataframe
 trylleviser$sentiment_scores <- numeric_scores
+
 ```
 
 ```{r sentiment analysis result trylleviser, echo=FALSE, eval=TRUE, include=TRUE}
@@ -124,15 +125,13 @@ knitr::kable(head(trylleviser_token[, c("songtitle", "lyrics_shortened", "word")
 
 ```{r sentiment analysis trylleviser_token, echo=TRUE, eval=TRUE, include=TRUE}
 #sentiment score trylleviser_token
-
-sentiment_scores_trylleviser_token <- lapply(trylleviser_token$word, function(x) sentida(x, output = "total"))
+sentiment_scores_trylleviser_token <- lapply(trylleviser_token$word, sentida, output = "total")
 
 #extracting numeric sentiment scores from the new output
-token_numeric_scores <- sapply(sentiment_scores_trylleviser_token, function(x) as.numeric(unlist(x)))
+token_numeric_scores <- sapply(sentiment_scores_trylleviser_token, as.numeric)
 
 #adding sentiment scores as a new column to the original dataframe
 trylleviser_token$sentiment_scores <- token_numeric_scores
-
 ```
 
 ```{r combing results by songtitle sentiment analysis trylleviser_token, echo=TRUE, eval=TRUE, include=TRUE}
@@ -155,6 +154,37 @@ ggplot(trylleviser_token_grouped, aes(x = songtitle, y = sentiment_scores)) +
   scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
 
 ```
+
+## Combining results on sentiment analysis
+
+```{r combining dataframes into one trylleviser_combined, echo=TRUE, eval=TRUE, include=FALSE}
+#merging existing dataframes and sorting them by common identifier songtitle
+trylleviser_combined <- merge(trylleviser_token_grouped, trylleviser, by = "songtitle")
+```
+
+```{r renaming columns in trylleviser_combined, echo=FALSE, eval=FALSE, include=FALSE}
+trylleviser_combined <- trylleviser_combined %>%
+  rename(sentiment_scores_token = sentiment_scores.x, sentiment_scores = sentiment_scores.y)
+```
+
+
+```{r visualization sentiment analysis combined, echo=TRUE, eval=TRUE, include=TRUE, fig.height=8}
+
+ggplot(trylleviser_combined, aes(x = songtitle)) +
+  geom_point(aes(y = sentiment_scores.x, color = "trylleviser_tokenized"), size = 2.5) +
+  geom_point(aes(y = sentiment_scores.y, color = "trylleviser"), size = 2.5) +
+  scale_color_manual(values = c("trylleviser_tokenized" = "darkblue", "trylleviser" = "darkred"),
+                     name = "",
+                     labels = c("trylleviser tokenized", "trylleviser")) +
+  labs(title = "Sentiment scores comparison for trylleviser",
+       x = "Trylleviser", y = "Sentiment score") +
+  custom_theme1 + custom_theme2 + custom_theme3 +
+  scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
+```
+
+#WORD COUNT
+
+## Trylleviser with words tokenized with stopwords
 
 ```{r count of words included when tokenized, echo=TRUE, eval=TRUE, include=TRUE}
 #counts how many words = 0.000000 (not included in sentiment analysis)
@@ -208,23 +238,3 @@ trylleviser_token_number_of_words_no_stopwords$combined_word_count <- tryllevise
 knitr::kable(trylleviser_token_number_of_words_no_stopwords)
 ```
 
-## Combining results on sentiment analysis
-
-```{r combining dataframes into one trylleviser_combined, echo=TRUE, eval=TRUE, include=FALSE}
-#merging existing dataframes and sorting them by common identifier songtitle
-trylleviser_combined <- merge(trylleviser_token_grouped, trylleviser, by = "songtitle")
-```
-
-```{r visualization comparison sentiment analysis trylleviser, echo=TRUE, eval=TRUE, include=TRUE, fig.height=8, fig.width=8}
-
-ggplot(trylleviser_combined, aes(x = songtitle)) +
-  geom_point(aes(y = sentiment_scores.x, color = "trylleviser"), size = 2.5) +
-  geom_point(aes(y = sentiment_scores.y, color = "trylleviser_tokenized"), size = 2.5) +
-  scale_color_manual(values = c("trylleviser" = "darkblue", "trylleviser_tokenized" = "darkred"),
-                     name = "",
-                     labels = c("trylleviser", "trylleviser tokenized")) +
-  labs(title = "Sentiment scores comparison for trylleviser",
-       x = "Trylleviser", y = "Sentiment score") +
-  custom_theme1 + custom_theme2 + custom_theme3 +
-  scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
-```

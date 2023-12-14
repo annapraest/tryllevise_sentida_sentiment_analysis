@@ -67,10 +67,13 @@ trylleviser <- trylleviser %>%
   )
 
 #sentiment score trylleviser
-sentiment_scores_trylleviser <- lapply(trylleviser$lyrics_clean, function(x) sentida(x, output = "total"))
-numeric_scores <- sapply(sentiment_scores_trylleviser, function(x) as.numeric(unlist(x)))
-trylleviser$sentiment_scores <- numeric_scores
+sentiment_scores_trylleviser <- lapply(trylleviser$lyrics_clean, sentida, output = "total")
+class(sentiment_scores_trylleviser)
 
+numeric_scores <- sapply(sentiment_scores_trylleviser, as.numeric)
+class(numeric_scores)
+
+trylleviser$sentiment_scores <- numeric_scores
 
 #visualizing it 
 ggplot(trylleviser, aes(x = songtitle, y = sentiment_scores)) +
@@ -93,8 +96,8 @@ trylleviser_token <- trylleviser_token %>%
 
 #sentiment analysis
 
-sentiment_scores_trylleviser_token <- lapply(trylleviser_token$word, function(x) sentida(x, output = "total"))
-token_numeric_scores <- sapply(sentiment_scores_trylleviser_token, function(x) as.numeric(unlist(x)))
+sentiment_scores_trylleviser_token <- lapply(trylleviser_token$word, sentida, output = "total")
+token_numeric_scores <- sapply(sentiment_scores_trylleviser_token, as.numeric)
 trylleviser_token$sentiment_scores <- token_numeric_scores
 
 
@@ -108,6 +111,38 @@ trylleviser_token_grouped <- trylleviser_token %>%
 ggplot(trylleviser_token_grouped, aes(x = songtitle, y = sentiment_scores)) +
   geom_bar(stat = "identity", fill = "darkred") +
   labs(title = "Trylleviser tokenized", x = "Folkeviser", y = "Sentiment score") +
+  custom_theme1 + custom_theme2 + custom_theme3 +
+  scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
+
+
+#combining dataframes into one sorting by common identifier
+
+trylleviser_combined <- merge(trylleviser_token_grouped, trylleviser, by = "songtitle")
+
+str(trylleviser_token_grouped)
+str(trylleviser)
+
+
+trylleviser_combined <- trylleviser_combined %>%
+  rename(sentiment_scores_token = sentiment_scores.x, sentiment_scores = sentiment_scores.y)
+
+str(trylleviser_combined)
+
+class(trylleviser_combined$sentiment_scores)
+class(trylleviser_combined$sentiment_scores_token)
+
+names(trylleviser_combined)
+
+#comparing results
+
+ggplot(trylleviser_combined, aes(x = songtitle)) +
+  geom_point(aes(y = sentiment_scores.x, color = "trylleviser"), size = 2.5) +
+  geom_point(aes(y = sentiment_scores.y, color = "trylleviser_tokenized"), size = 2.5) +
+  scale_color_manual(values = c("trylleviser" = "darkblue", "trylleviser_tokenized" = "darkred"),
+                     name = "",
+                     labels = c("trylleviser", "trylleviser tokenized")) +
+  labs(title = "Sentiment scores comparison for trylleviser",
+       x = "Trylleviser", y = "Sentiment score") +
   custom_theme1 + custom_theme2 + custom_theme3 +
   scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
 
@@ -155,26 +190,7 @@ trylleviser_token_number_of_words_no_stopwords <- trylleviser_token_no_stopwords
 trylleviser_token_number_of_words_no_stopwords$combined_word_count <- trylleviser_token_number_of_words_no_stopwords$words_with_score_0 + trylleviser_token_number_of_words$words_not_score_0
 
 
-#combining dataframes into one sorting by common identifier
 
-trylleviser_combined <- merge(trylleviser_token_grouped, trylleviser, by = "songtitle")
-
-str(trylleviser_token_grouped)
-str(trylleviser)
-
-
-#comparing results
-
-ggplot(trylleviser_combined, aes(x = songtitle)) +
-  geom_point(aes(y = sentiment_scores.x, color = "trylleviser"), size = 2.5) +
-  geom_point(aes(y = sentiment_scores.y, color = "trylleviser_tokenized"), size = 2.5) +
-  scale_color_manual(values = c("trylleviser" = "darkblue", "trylleviser_tokenized" = "darkred"),
-                     name = "",
-                     labels = c("trylleviser", "trylleviser tokenized")) +
-  labs(title = "Sentiment scores comparison for trylleviser",
-       x = "Trylleviser", y = "Sentiment score") +
-  custom_theme1 + custom_theme2 + custom_theme3 +
-  scale_y_continuous(limits = c(-50, 150), breaks = seq(-50, 150, by = 10))
 
 
 #problems with RMarkdown script, choosing CRANmirror
